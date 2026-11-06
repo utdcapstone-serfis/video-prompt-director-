@@ -23,6 +23,8 @@ DB = ROOT / "director.db"
 MODEL = os.environ.get("DIRECTOR_MODEL", "qwen3:4b")
 HF = os.environ.get("HF_SCRIPT", str(Path.home() / ".claude/skills/higgsfield/scripts/hf.py"))
 ENDPOINT = "bytedance/seedance-2.5/text-to-video"
+REF_ENDPOINT = "bytedance/seedance-2.5/reference-to-video"
+REF_ROLES = ["character", "product", "logo", "scene", "style", "other"]
 CODES = ["ID", "CNT", "REF", "TXT", "CAM", "MOT", "TIME", "CONT", "AUD", "PRM", "OTHER"]
 HYPE = ["8k", "4k", "masterpiece", "hyperrealistic", "ultra-realistic"]
 KEYS = ["platform", "duration_s", "references", "shots", "subject", "environment", "lighting",
@@ -40,10 +42,11 @@ def db():
     CREATE TABLE IF NOT EXISTS lessons(
       id INTEGER PRIMARY KEY, created TEXT, text TEXT, source_run INTEGER, status TEXT);
     """)
-    try:
-        c.execute("ALTER TABLE runs ADD COLUMN variant TEXT")
-    except sqlite3.OperationalError:
-        pass  # column already exists
+    for col in ("variant", "refs"):
+        try:
+            c.execute(f"ALTER TABLE runs ADD COLUMN {col} TEXT")
+        except sqlite3.OperationalError:
+            pass  # column already exists
     return c
 
 
@@ -72,7 +75,7 @@ def parse(raw):
 
 
 # ---------- lint ----------
-def lint(p, duration, ban):
+def lint(p, duration, ban, nrefs=0):
     if not isinstance(p, dict):
         return ["not a JSON object"]
     issues = [f"missing key: {k}" for k in KEYS if k not in p]
@@ -93,6 +96,8 @@ def lint(p, duration, ban):
     body = json.dumps({k: v for k, v in p.items() if k not in ("negatives", "risks", "assumptions", "change_log")}).lower()
     issues += [f"CAM/PRM: banned term in body: '{t}'" for t in ban if t.lower() in body]
     issues += [f"PRM: hype token '{t}'" for t in HYPE if t in body]
+    if nrefs and len(p.get("references") or []) != nrefs:
+        issues.append(f"REF: `references` must list exactly the {nrefs} supplied reference image(s)")
     return issues
 
 
@@ -111,13 +116,16 @@ def render(p):
     return " ".join(lines)
 
 
-def preflight(p, text, duration):
+def preflight(p, text, duration, nrefs=0):
     """Soft warnings before spending credits. These do not block generation."""
     w = []
     if duration < 4:
         w.append("Seedance 2.5 needs duration >= 4s (Higgsfield docs).")
-    if any(r.get("id") for r in p.get("references", []) if isinstance(r, dict)):
-        w.append("references listed, but text-to-video takes no media (Higgsfield docs). Remove them or use reference-to-video.")
+    if nrefs:
+        w.append("reference-to-video: Higgsfield does not document how reference order maps to the prompt. "
+                 "Test with one reference first, and check each subject looks like its reference.")
+    elif any(r.get("id") for r in p.get("references", []) if isinstance(r, dict)):
+        w.append("references listed, but text-to-video takes no media (Higgsfield docs). Remove them or use --ref.")
     if re.search(r"\b(image_\d|@image|#image)", text):
         w.append("prompt text refers to image tags; tag syntax is not documented by Higgsfield.")
     if len([n for n in p.get("negatives", []) if str(n).strip()]) > 4:
@@ -164,28 +172,51 @@ def guidance(text, k=4):
     return block, [g["id"] for g in top]
 
 
-def make_run(c, brief, duration, must, ban, user, parent=None):
+def norm_refs(p, refs):
+    """The `references` field must match the supplied references: empty for text-to-video."""
+    if isinstance(p, dict) and not refs:
+        p["references"] = []
+    elif isinstance(p, dict) and refs and isinstance(p.get("references"), list):
+        for i, x in enumerate(p["references"][:len(refs)]):
+            if isinstance(x, dict):
+                x["id"] = f"ref{i + 1}"; x["role"] = refs[i]["role"]
+    return p
+
+
+def ref_note(refs):
+    if not refs:
+        return ""
+    lines = "\n".join(f"{i}. role={x['role']}" for i, x in enumerate(refs, 1))
+    return ("\nReference images supplied to the video model, in this order:\n" + lines +
+            "\nFill `references` with exactly these entries (ids ref1, ref2, ... plus the role). You cannot see the images, "
+            "so do not describe their appearance. Refer to each one in plain words by role, for example "
+            "'the person in the character reference image'. Do not use tag syntax such as @image or image_0.")
+
+
+def make_run(c, brief, duration, must, ban, user, parent=None, refs=None):
+    refs = refs or []
+    n = len(refs)
     raw = llm(system_prompt(), user)
-    p = parse(raw)
-    issues = lint(p, duration, ban)
+    p = norm_refs(parse(raw), refs)
+    issues = lint(p, duration, ban, n)
     if issues:  # one automatic repair pass
         print("lint found:", *issues, sep="\n  - ")
         raw = llm(system_prompt(), user + "\n\nYour previous draft had these problems, fix them and return full JSON:\n- "
                   + "\n- ".join(issues) + "\nPrevious draft:\n" + (raw if p is None else json.dumps(p)))
-        p2 = parse(raw)
-        issues2 = lint(p2, duration, ban)
+        p2 = norm_refs(parse(raw), refs)
+        issues2 = lint(p2, duration, ban, n)
         if p2 is not None and len(issues2) <= len(issues):
             p, issues = p2, issues2
-    if not isinstance(p, dict) or "shots" not in p or lint(p, duration, ban) == ["shots must be a non-empty list of objects"]:
+    if not isinstance(p, dict) or "shots" not in p or lint(p, duration, ban, n) == ["shots must be a non-empty list of objects"]:
         sys.exit("Could not get a usable draft from the model.")
     text = render(p)
-    warns = preflight(p, text, duration)
+    warns = preflight(p, text, duration, n)
     if warns:
         print("pre-flight warnings:", *warns, sep="\n  - ")
-    cur = c.execute("INSERT INTO runs(parent_id,created,brief,duration,must,ban,prompt_json,prompt_text,lint,status) "
-                    "VALUES(?,?,?,?,?,?,?,?,?,?)",
+    cur = c.execute("INSERT INTO runs(parent_id,created,brief,duration,must,ban,prompt_json,prompt_text,lint,status,refs) "
+                    "VALUES(?,?,?,?,?,?,?,?,?,?,?)",
                     (parent, time.strftime("%Y-%m-%d %H:%M"), brief, duration, json.dumps(must), json.dumps(ban),
-                     json.dumps(p), text, json.dumps(issues), "drafted"))
+                     json.dumps(p), text, json.dumps(issues), "drafted", json.dumps(refs) if refs else None))
     c.commit()
     print(f"\nRun {cur.lastrowid} saved.  Remaining lint issues: {issues or 'none'}")
     if p.get("risks"): print("Model-flagged risks:", p["risks"])
@@ -194,14 +225,31 @@ def make_run(c, brief, duration, must, ban, user, parent=None):
 
 
 # ---------- commands ----------
+def parse_refs(items):
+    refs = []
+    for it in items:
+        role, sep, src = it.partition("=")
+        if not sep or role not in REF_ROLES:
+            sys.exit(f"--ref must look like ROLE=PATH_OR_URL with ROLE one of {REF_ROLES}; got: {it}")
+        if not src.startswith("http"):
+            src = str(Path(src).expanduser().resolve())
+            if not Path(src).is_file():
+                sys.exit(f"reference file not found: {src}")
+        refs.append({"role": role, "src": src})
+    if len(refs) > 30:
+        sys.exit("Seedance 2.5 reference-to-video allows at most 30 images (Higgsfield docs).")
+    return refs
+
+
 def cmd_draft(a):
     c = db()
-    gblock, used = guidance(a.brief + " " + " ".join(a.must))
+    refs = parse_refs(a.ref)
+    gblock, used = guidance(a.brief + " " + " ".join(a.must) + (" reference image" if refs else ""))
     print("guidance used:", used or "none")
     user = (f"Brief: {a.brief}\nPlatform: seedance\nDuration: {a.duration} seconds\n"
-            f"Must-haves: {a.must or 'none'}\nBanned: {a.ban or 'none'}\nReturn JSON only."
+            f"Must-haves: {a.must or 'none'}\nBanned: {a.ban or 'none'}" + ref_note(refs) + "\nReturn JSON only."
             + approved_lessons(c) + gblock)
-    make_run(c, a.brief, a.duration, a.must, a.ban, user)
+    make_run(c, a.brief, a.duration, a.must, a.ban, user, refs=refs)
 
 
 def cmd_plain(a):
@@ -236,10 +284,31 @@ def cmd_generate(a):
     if r["duration"] < 4:
         sys.exit("Seedance 2.5 text-to-video needs duration >= 4s (per Higgsfield docs).")
     out = ROOT / "videos" / f"run{a.run}"
-    cmd = [sys.executable, HF, "generate", ENDPOINT, "--prompt", r["prompt_text"],
-           "--param", f"duration={r['duration']}", "--param", f"resolution={a.resolution}",
-           "--param", f"aspect_ratio={a.aspect}", "--param", f"generate_audio={'true' if a.audio else 'false'}",
-           "--out", str(out)]
+    refs = json.loads(r["refs"]) if r["refs"] else []
+    if refs:
+        local = [x for x in refs if not x["src"].startswith("http")]
+        if a.yes and local and not a.upload_ok:
+            sys.exit(f"{len(local)} reference file(s) are local. Uploading creates temporary PUBLIC URLs on Higgsfield. "
+                     "Add --upload-ok to allow it, or use already-hosted https URLs.")
+        urls = []
+        for x in refs:
+            if x["src"].startswith("http"):
+                urls.append(x["src"]); continue
+            if not a.yes:
+                urls.append(f"<would upload {Path(x['src']).name}>"); continue
+            up = subprocess.run([sys.executable, HF, "upload", x["src"]], capture_output=True, text=True)
+            m = re.search(r'"public_url":\s*"([^"]+)"', up.stdout)
+            if not m:
+                sys.exit("Upload failed: " + (up.stdout + up.stderr)[-400:])
+            urls.append(m.group(1))
+        body = {"prompt": r["prompt_text"], "image_urls": urls, "duration": r["duration"], "resolution": a.resolution,
+                "aspect_ratio": a.aspect, "generate_audio": bool(a.audio)}
+        cmd = [sys.executable, HF, "generate", REF_ENDPOINT, "--json", json.dumps(body), "--out", str(out)]
+    else:
+        cmd = [sys.executable, HF, "generate", ENDPOINT, "--prompt", r["prompt_text"],
+               "--param", f"duration={r['duration']}", "--param", f"resolution={a.resolution}",
+               "--param", f"aspect_ratio={a.aspect}", "--param", f"generate_audio={'true' if a.audio else 'false'}",
+               "--out", str(out)]
     if not a.yes:
         cmd.append("--dry-run")
         print("DRY RUN (no credits spent). Add --yes to generate.\n")
@@ -263,7 +332,11 @@ def cmd_estimate(a):
     r = db().execute("SELECT * FROM runs WHERE id=?", (a.run,)).fetchone() or sys.exit("no such run")
     body = {"prompt": r["prompt_text"], "duration": r["duration"], "resolution": a.resolution,
             "aspect_ratio": a.aspect, "generate_audio": a.audio}
-    req = urllib.request.Request(f"https://api.higgsfield.ai/estimate/{ENDPOINT}", json.dumps(body).encode(),
+    ep = ENDPOINT
+    if r["refs"]:  # estimate with placeholder URLs; nothing is uploaded
+        ep = REF_ENDPOINT
+        body["image_urls"] = ["https://example.com/reference.png"] * len(json.loads(r["refs"]))
+    req = urllib.request.Request(f"https://api.higgsfield.ai/estimate/{ep}", json.dumps(body).encode(),
                                  {"Content-Type": "application/json", "Authorization": f"Key {key}"})
     try:
         print(f"Estimate for run {a.run} at {a.resolution}, {r['duration']}s, audio={a.audio}:",
@@ -291,7 +364,9 @@ def cmd_revise(a):
             f"Previous JSON:\n{r['prompt_json']}\n\nChange only what addresses this failure and list the changes in change_log. "
             f"Return full JSON.\n<reference untrusted='true'>\n{taxonomy}\n</reference>" + approved_lessons(c)
             + guidance(r["brief"] + " " + (r["notes"] or ""))[0])
-    make_run(c, r["brief"], r["duration"], json.loads(r["must"]), json.loads(r["ban"]), user, parent=a.run)
+    refs = json.loads(r["refs"]) if r["refs"] else []
+    make_run(c, r["brief"], r["duration"], json.loads(r["must"]), json.loads(r["ban"]), user + ref_note(refs),
+             parent=a.run, refs=refs)
 
 
 def cmd_lesson(a):
@@ -409,8 +484,11 @@ def cmd_list(a):
 def main():
     ap = argparse.ArgumentParser(); sub = ap.add_subparsers(dest="cmd", required=True)
     d = sub.add_parser("draft"); d.add_argument("brief"); d.add_argument("--duration", type=int, required=True)
-    d.add_argument("--must", nargs="*", default=[]); d.add_argument("--ban", nargs="*", default=[]); d.set_defaults(f=cmd_draft)
+    d.add_argument("--must", nargs="*", default=[]); d.add_argument("--ban", nargs="*", default=[])
+    d.add_argument("--ref", nargs="*", default=[], metavar="ROLE=PATH_OR_URL",
+                   help=f"reference images, in order; roles: {', '.join(REF_ROLES)}"); d.set_defaults(f=cmd_draft)
     g = sub.add_parser("generate"); g.add_argument("run", type=int); g.add_argument("--yes", action="store_true")
+    g.add_argument("--upload-ok", action="store_true", help="allow uploading local reference files (temporary public URLs)")
     g.add_argument("--resolution", default="720p", choices=["480p", "720p", "1080p"])
     g.add_argument("--aspect", default="9:16"); g.add_argument("--audio", action="store_true"); g.set_defaults(f=cmd_generate)
     pl = sub.add_parser("plain"); pl.add_argument("brief"); pl.add_argument("--duration", type=int, required=True)
