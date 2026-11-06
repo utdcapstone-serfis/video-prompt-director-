@@ -1,0 +1,45 @@
+{
+  "platform": "seedance",
+  "duration_s": 5,
+  "references": [
+    "Protein bar UGC",
+    "Student in dorm",
+    "Dorm room setting",
+    "Open bar, take bite, reaction",
+    "Wrapper branding visible"
+  ],
+  "shots": [
+    "Close-up of student's hand opening the protein bar wrapper",
+    "Quick cut to student's face showing initial surprise",
+    "Student takes a small bite and closes eyes briefly",
+    "Close-up of wrapper branding visible after bite",
+    "Final shot: student smiles and puts wrapper on table"
+  ],
+  "subject": "Student",
+  "environment": "Dorm room",
+  "lighting": "Natural light from window, soft shadows",
+  "style": "Realistic, fast-paced, minimalistic",
+  "continuity": "Smooth transitions between shots, minimal editing",
+  "negatives": [
+    "Bar wrapper not visible",
+    "Student reaction too slow",
+    "Dorm room cluttered",
+    "Lighting too harsh",
+    "Inconsistent branding"
+  ],
+  "risks": [
+    "Bar wrapper may not stay visible after bite",
+    "Student reaction might not be engaging",
+    "Dorm room setting could be too generic",
+    "Lighting might not match brand colors",
+    "Wrapper branding could be too small for visibility"
+  ],
+  "assumptions": [
+    "Protein bar wrapper has clear branding",
+    "Student is familiar with the product",
+    "Dorm room is clean enough for UGC",
+    "Natural light is sufficient",
+    "Bar is not too hard to open"
+  ],
+ ": change_log": "Initial version with 5 shots, refined to ensure wrapper branding stays visible"
+}

@@ -1,0 +1,51 @@
+{
+  "platform": "seedance",
+  "duration_s": 5,
+  "references": [
+    {
+      "id": "image_0",
+      "role": "product"
+    }
+  ],
+  "shots": [
+    {
+      "t_start": 0,
+      "t_end": 2,
+      "action": "A woman applies the serum to her cheek with a cotton pad",
+      "camera": "Static close-up on the woman's face"
+    },
+    {
+      "t_start": 2,
+      "t_end": 3,
+      "action": "She turns to face the mirror, showing the bottle label",
+      "camera": "Slow pan from face to mirror"
+    },
+    {
+      "t_start": 3,
+      "t_end": 5,
+      "action": "The label remains visible as she smiles and holds the bottle",
+      "camera": "Static close-up on the bottle label"
+    }
+  ],
+  "subject": "A woman with natural hair applying a lightweight serum to her cheek",
+  "environment": "Bathroom with a mirror and a sink",
+  "lighting": "Bright bathroom light with soft reflection from mirror",
+  "style": "Realistic, authentic UGC-style ad",
+  "continuity": [
+    "The serum bottle label stays readable and facing camera",
+    "The woman's hand holds the bottle without covering the label"
+  ],
+  "negatives": [
+    "no text overlays",
+    "no product logos",
+    "no additional people"
+  ],
+  "risks": [
+    "Label text may be hard to read in close-up; consider adding a small text overlay in post",
+    "Mirror reflections may show the bottle from an angle; adjust mirror placement in post"
+  ],
+  "assumptions": [
+    "The product reference image (image_0) shows the serum bottle label clearly"
+  ],
+  "change_log": []
+}

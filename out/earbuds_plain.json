@@ -1,0 +1,39 @@
+{
+  "platform": "seedance",
+  "duration_s": 6,
+  "references": [
+    "Wireless earbuds unboxing video",
+    "Train station scene with minimalistic background",
+    "Quick cuts of earbuds insertion and case tapping"
+  ],
+  "shots": [
+    "Close-up of hand placing earbuds into ears",
+    "Slow motion of tapping the case against the train window",
+    "Hand holding the case with a subtle reflection in the window"
+  ],
+  "subject": "Person wearing casual clothing",
+  "environment": "Urban train station platform with blurred background",
+  "lighting": "Natural daylight from a window, soft and diffused",
+  "style": "Minimalist, clean, fast-paced transitions",
+  "continuity": "Smooth transitions between shots without cuts to the case",
+  "negatives": [
+    "Overly flashy or distracting backgrounds",
+    "Long pauses that exceed the 6-second duration",
+    "Case being visible outside the frame after tapping"
+  ],
+  "risks": [
+    "Inconsistent timing of the earb:uds insertion",
+    "Window reflection not aligning with the case",
+    "Misinterpretation of the case tapping action"
+  ],
+  "assumptions": [
+    "The person is wearing the earbuds correctly",
+    "The train window is clear and not tinted",
+    "The case tapping motion is fluid and natural"
+  ],
+  "change_log": [
+    "Initial draft focused on the insertion action, adjusted to emphasize case tapping",
+    "Added subtle reflections to enhance realism without complicating the frame",
+    "Ensured all shots maintain the case in the frame throughout"
+  ]
+}

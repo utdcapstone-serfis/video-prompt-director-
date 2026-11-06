@@ -1,0 +1,62 @@
+{
+  "platform": "seedance",
+  "duration_s": 6,
+  "references": [
+    {
+      "id": "image_0",
+      "role": "rooftop scene"
+    },
+    {
+      "id": "image_2",
+      "role": "logo"
+    },
+    {
+      "id": "image_4",
+      "role": "athlete sheet"
+    }
+  ],
+  "shots": [
+    {
+      "t_start": 0,
+      "t_end": 2,
+      "action": "Two athletes leap upward from a rooftop gym",
+      "camera": "Slow dolly out"
+    },
+    {
+      "t_start": 2,
+      "t_end": 4,
+      "action": "The athletes gather their limbs to form the metallic S logo",
+      "camera": "Static mid-shot"
+    },
+    {
+      "t_start": 4,
+      "t_end": 6,
+      "action": "The S logo glows in the sunset sky",
+      "camera": "Static wide shot"
+    }
+  ],
+  "subject": "Two athletes forming a metallic S logo from their body",
+  "environment": "Sunny rooftop gym at sunset with clouds",
+  "lighting": "Golden hour sunlight through clouds",
+  "style": "Dynamic, cinematic sports ad",
+  "continuity": [
+    "The athletes' movements are fluid",
+    "The metallic S logo is fully formed by the end",
+    "Clouds are visible and part of the background"
+  ],
+  "negatives": [
+    "no text overlays",
+    "no people in the sky",
+    "no additional elements beyond the athletes and logo"
+  ],
+  "risks": [
+    "Logo may not be metallic; consider adding metal texture in post",
+    "Clouds might not show enough detail; ensure reference image has clear clouds"
+  ],
+  "assumptions": [
+    "Image_0 shows a rooftop gym with sunset clouds",
+    "Image_2 has the metallic S logo",
+    "Image_4 shows athletes in action poses"
+  ],
+  "change_log": []
+}

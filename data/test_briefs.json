@@ -1,0 +1,11 @@
+[
+  {"id": "sa", "text": "Start Again luxury gym brand. 6-second ending shot: two athletes on a sunset rooftop gym leap up through clouds and assemble a metallic S logo. Reference images: rooftop scene (image_0), logo (image_2), athlete sheet (image_4).", "duration": 6, "must": ["two"], "ban": ["jump cut"]},
+  {"id": "rooftop", "text": "Rooftop fitness ad, two men, both holding silver dumbbells, visible sweat, cinematic lighting. Camera reveals the rest of the class.", "duration": 7, "must": ["dumbbell", "sweat"], "ban": ["drone", "zoom out", "zooming out"]},
+  {"id": "serum", "text": "Skincare serum UGC: woman applies the serum in a bathroom mirror and shows the bottle label to camera.", "duration": 5, "must": ["bottle", "label"], "ban": ["drone"]},
+  {"id": "coffee", "text": "Coffee maker product ad: hands-only, morning kitchen, pour into a mug, steam visible. Logo must stay readable.", "duration": 8, "must": ["steam", "logo"], "ban": ["face"]},
+  {"id": "shoes", "text": "Running shoes ad: one runner on a city street at dawn, close-ups of shoes striking the pavement.", "duration": 6, "must": ["shoe"], "ban": ["drone", "slow motion"]},
+  {"id": "protein", "text": "Protein bar UGC: a student in a dorm opens the bar, takes a bite, reacts. Wrapper branding must stay visible.", "duration": 5, "must": ["wrapper"], "ban": ["cut"]},
+  {"id": "backpack", "text": "Backpack lifestyle ad: two friends hiking, one adjusts the straps and shows the zipper pocket.", "duration": 10, "must": ["two", "strap"], "ban": ["drone"]},
+  {"id": "earbuds", "text": "Wireless earbuds product ad: single person on a train puts in earbuds, tapping the case. Case must stay in frame.", "duration": 6, "must": ["case"], "ban": ["zoom"]},
+  {"id": "sneaker_macro", "text": "Macro product shot of a white sneaker rotating slowly on a pedestal, studio lighting, no people.", "duration": 4, "must": ["sneaker"], "ban": ["person", "people", "hand"]}
+]

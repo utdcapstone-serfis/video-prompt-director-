@@ -1,0 +1,68 @@
+{
+  "platform": "seedance",
+  "duration_s": 10,
+  "references": [
+    {
+      "id": "image_0",
+      "role": "product"
+    },
+    {
+      "id": "image_1",
+      "role": "background"
+    }
+  ],
+  "shots": [
+    {
+      "t_start": 0,
+      "t_end": 2,
+      "action": "Two friends hike through a forest trail",
+      "camera": "Static wide shot"
+    },
+    {
+      "t_start": 2,
+      "t_end": 4,
+      "action": "One friend adjusts the backpack straps",
+      "camera": "Static close-up on the backpack"
+    },
+    {
+      "t_start": 4,
+      "t_end": 6,
+      "action": "The other friend shows the zipper pocket",
+      "camera": "Static close-up on the pocket"
+    },
+    {
+      "t_start": 6,
+      "t_end": 8,
+      "action": "Backpack sits on a rock; both friends look at it",
+      "camera": "Slow pull-back to show full scene"
+    },
+    {
+      "t_start": 8,
+      "t_end": 10,
+      "action": "Friends smile and continue hiking",
+      "camera": "Static wide shot"
+    }
+  ],
+  "subject": "A blue backpack with a green zipper pocket",
+  "environment": "Forest trail with sunlight filtering through trees",
+  "lighting": "Soft natural light with dappled shadows",
+  "style": "Lively, natural lifestyle ad",
+  "continuity": [
+    "Backpack stays visible and the zipper pocket faces the camera",
+    "Both friends wear casual outdoor clothing"
+  ],
+  "negatives": [
+    "no text overlays",
+    "no artificial lighting",
+    "no close-ups of faces"
+  ],
+  "risks": [
+    "Straps might not be clearly visible in close-ups; consider using a reference image with clear straps",
+    "Pocket may be too small to see clearly; adjust reference image if needed"
+  ],
+  "assumptions": [
+    "Reference image_0 shows a blue backpack with green zipper pocket",
+    "Reference image_1 shows a forest trail background"
+  ],
+  "change_log": []
+}

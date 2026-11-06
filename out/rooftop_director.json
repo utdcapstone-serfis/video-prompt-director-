@@ -1,0 +1,63 @@
+{
+  "platform": "seedance",
+  "duration_s": 7,
+  "references": [
+    {
+      "id": "image_0",
+      "role": "product"
+    },
+    {
+      "id": "image_1",
+      "role": "person"
+    }
+  ],
+  "shots": [
+    {
+      "t_start": 0,
+      "t_end": 2,
+      "action": "Two men in athletic wear lift silver dumbbells with visible sweat",
+      "camera": "Static medium shot from above"
+    },
+    {
+      "t_start": 2,
+      "t_end": 4,
+      "action": "Dumbbells are lowered with controlled motion; sweat glistens on foreheads",
+      "camera": "Slow push-in to reveal more of the class"
+    },
+    {
+      "t_start": 4,
+      "t_end": 6,
+      "action": "One man adjusts his grip as he lifts the dumbbells",
+      "camera": "Static close-up on the hands"
+    },
+    {
+      "t_start": 6,
+      "t_end": 7,
+      "action": "The class is fully visible with a cinematic lighting effect",
+      "camera": "Wide shot showing the entire class"
+    }
+  ],
+  "subject": "Two men wearing athletic attire, holding silver dumbbells",
+  "environment": "Rooftop with a city skyline in the background",
+  "lighting": "Cinematic lighting with dramatic shadows and highlights",
+  "style": "Cinematic sports ad",
+  "continuity": [
+    "Sweat visible on foreheads",
+    "Dumbbells are silver with visible weight",
+    "Class is visible from the rooftop"
+  ],
+  "negatives": [
+    "no text overlays",
+    "no people outside the class",
+    "no slow motion effects"
+  ],
+  "risks": [
+    "Sweat may not be visible enough in fast motion; consider adding more sweat details in post",
+    "Cinematic lighting might be too harsh for some viewers; adjust contrast in post"
+  ],
+  "assumptions": [
+    "Product reference image shows silver dumbbells",
+    "Reference image for person shows athletic attire"
+  ],
+  "change_log": []
+}

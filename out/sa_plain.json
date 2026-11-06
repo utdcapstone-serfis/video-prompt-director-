@@ -1,0 +1,39 @@
+{
+  "platform": "seedance",
+  "duration_s": 6,
+  "references": [
+    "image_0",
+    "image_2",
+    "image_4"
+  ],
+  "shots": [
+    "rooftop gym scene",
+    "cloud leap",
+    "logo assembly"
+  ],
+  "subject": "two athletes",
+  "environment": "sunset rooftop gym",
+  "lighting": "golden hour sunset lighting",
+  "style": "high-energy, cinematic, minimalistic",
+  "continuity": "smooth transition from rooftop to cloud leap to logo assembly",
+  "negatives": [
+    "overly complex background",
+    "slow motion for cloud leap",
+    "logo appearing too early"
+  ],
+  "risks": [
+    "clouds not matching the leap timing",
+    "logo assembly being too abstract",
+    "athletes not aligning with logo shape"
+  ],
+  "assumptions": [
+    "Rooftop gym is visible in the scene",
+    "Athletes have sufficient space to leap through clouds",
+    "S logo is metallic and reflective"
+  ],
+  "change_log": [
+    "Initial version had cloud leap too slow; adjusted to 0.5s for smooth transition",
+    "Logo assembly timing shifted from 4.5s to 5.8s to ensure clarity",
+    "Added subtle motion blur on athletes during leap to enhance fluidity"
+  ]
+}

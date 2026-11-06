@@ -1,0 +1,17 @@
+{
+  "_lock": "LOCKED 2026-11-05. Do not tune the system prompt, lint rules, or knowledge base against these briefs. Use only for the final comparison. If you must change one, record it in docs/experiment_plan.md and treat the whole set as used.",
+  "briefs": [
+    {"id": "h01", "text": "Reusable water bottle ad: a hiker on a trail drinks from the bottle, then holds it up so the logo faces camera.", "duration": 6, "must": ["bottle", "logo"], "ban": ["drone"]},
+    {"id": "h02", "text": "Lip balm UGC: a woman in a car applies the lip balm, looks at herself in the visor mirror, and smiles.", "duration": 5, "must": ["lip balm", "mirror"], "ban": ["cut"]},
+    {"id": "h03", "text": "Two friends share a pizza on a couch and laugh. One reaches for the last slice.", "duration": 6, "must": ["two", "pizza"], "ban": ["zoom"]},
+    {"id": "h04", "text": "Smartwatch ad: a runner glances at the watch on their wrist at the end of a run; the screen stays facing camera.", "duration": 5, "must": ["watch", "wrist"], "ban": ["drone", "zoom out"]},
+    {"id": "h05", "text": "Hands-only candle ad: a hand lights a candle on a wooden shelf; the label stays readable.", "duration": 4, "must": ["candle", "label"], "ban": ["face", "person"]},
+    {"id": "h06", "text": "Yoga mat ad: three people stretch in a sunlit studio, all on matching mats, one holds a pose at the front.", "duration": 8, "must": ["three", "mat"], "ban": ["drone"]},
+    {"id": "h07", "text": "Cold brew can ad: a can is opened with a visible fizz in a kitchen, then poured over ice.", "duration": 6, "must": ["can", "ice"], "ban": ["face"]},
+    {"id": "h08", "text": "Jacket ad: a model walks toward camera on a city street in light rain, jacket zipped, hood down.", "duration": 6, "must": ["jacket", "hood"], "ban": ["drone", "cut"]},
+    {"id": "h09", "text": "Dog treats ad: a dog sits, an owner hands it one treat, and the dog eats it. Only one dog.", "duration": 5, "must": ["dog", "treat"], "ban": ["two dogs"]},
+    {"id": "h10", "text": "Phone case ad: a person flips a phone from front to back to show the case design; the design stays unchanged.", "duration": 5, "must": ["case", "phone"], "ban": ["zoom"]},
+    {"id": "h11", "text": "Gym class ad: four people do squats in unison at a window-lit studio; the camera starts wide and pushes in slowly.", "duration": 7, "must": ["four", "squat"], "ban": ["drone", "zoom out"]},
+    {"id": "h12", "text": "Perfume bottle macro: the bottle rotates slowly on a reflective surface, light sweeping across the glass. No people.", "duration": 4, "must": ["bottle", "glass"], "ban": ["person", "people", "hand"]}
+  ]
+}

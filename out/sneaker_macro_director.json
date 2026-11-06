@@ -1,0 +1,44 @@
+{
+  "platform": "seedance",
+  "duration_s": 4,
+  "references": [
+    {
+      "id": "image_0",
+      "role": "product"
+    }
+  ],
+  "shots": [
+    {
+      "t_start": 0,
+      "t_end": 2,
+      "action": "A white sneaker rotates slowly on a pedestal",
+      "camera": "Static close-up on the sneaker"
+    },
+    {
+      "t_start": 2,
+      "t_end": 4,
+      "action": "Sneaker continues rotating while studio lighting highlights the sole",
+      "camera": "Slow push-in on the sole"
+    }
+  ],
+  "subject": "A white sneaker with clean lines",
+  "environment": "Studio background with neutral tones",
+  "lighting": "Even studio lighting with soft shadows",
+  "style": "Clean, minimalist product ad",
+  "continuity": [
+    "Sneaker rotates smoothly without wobble",
+    "Studio lighting remains consistent"
+  ],
+  "negatives": [
+    "no people",
+    "no background elements"
+  ],
+  "risks": [
+    "Sneaker rotation may appear jerky; ensure smooth motion",
+    "Studio lighting might cause reflections; adjust angles in post"
+  ],
+  "assumptions": [
+    "The reference image shows a white sneaker on a pedestal"
+  ],
+  "change_log": []
+}

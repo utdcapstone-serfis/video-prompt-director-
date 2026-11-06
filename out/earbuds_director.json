@@ -1,0 +1,52 @@
+{
+  "platform": "seedance",
+  "duration_s": 6,
+  "references": [
+    {
+      "id": "image_0",
+      "role": "product"
+    }
+  ],
+  "shots": [
+    {
+      "t_start": 0,
+      "t_end": 2,
+      "action": "A person inserts wireless earbuds into their ears while holding a case",
+      "camera": "Static close-up on the person's hands"
+    },
+    {
+      "t_start": 2,
+      "t_end": 4,
+      "action": "The person taps the case once, then looks at the phone",
+      "camera": "Slow pull-back to show the train platform"
+    },
+    {
+      "t_start": 4,
+      "t_end": 6,
+      "action": "The case remains visible in the frame while the person focuses on the phone",
+      "camera": "Static wide shot of the train platform"
+    }
+  ],
+  "subject": "A person with wireless earbuds and a case",
+  "environment": "Train platform with a busy station",
+  "lighting": "Bright daylight with occasional shadows",
+  "style": "Realistic, fast-paced lifestyle ad",
+  "continuity": [
+    "The case stays visible in the frame",
+    "The earbuds are fully inserted"
+  ],
+  "negatives": [
+    "no text overlays",
+    "no additional products",
+    "no camera movements beyond the specified shots"
+  ],
+  "risks": [
+    "The case might be too small to stay visible; consider using a larger case model",
+    "Earbuds might not be clearly visible due to lighting; adjust camera angle"
+  ],
+  "assumptions": [
+    "The reference image shows a person with wireless earbuds and a case",
+    "The platform has a busy station environment"
+  ],
+  "change_log": []
+}

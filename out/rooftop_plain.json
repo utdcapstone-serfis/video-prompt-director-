@@ -1,0 +1,38 @@
+{
+  "platform": "seedance",
+  "duration_s": 7,
+  "references": ["cinematic fitness ad"],
+  "shots": [
+    "extreme close-up of hands gripping silver dumbbells, visible sweat droplets",
+    "medium shot of two men doing overhead press, focused on upper body strain",
+    "wide shot revealing the rooftop fitness class with diverse participants",
+    "low-angle shot emphasizing the gym's architectural details against the city skyline"
+  ],
+  "subject": "two men",
+  "environment": "rooftop fitness studio with urban skyline in background",
+  "lighting": "cinematic, high-contrast lighting with natural daylight filtering through city windows",
+  "style": "high-energy, dynamic, minimalistic composition",
+ ": ":
+  "continuity",
+  "negatives": [
+    "excessive sweat causing blurry shots",
+    "over-saturation of colors",
+    "lack of diversity in class participants",
+    "static camera angles"
+  ],
+  "risks": [
+    "safety concerns with rooftop movements",
+    "inconsistent dumbbell weights causing uneven tension",
+    "camera equipment malfunction in windy conditions"
+  ],
+  "assumptions": [
+    "Participants are trained in fitness routines",
+    "Rooftop has proper safety measures",
+    "Dumbbells are weight-appropriate for the scene"
+  ],
+  "change_log": [
+    "Initial version: Focused on single subject, added class context",
+    "Second version: Adjusted lighting to emphasize sweat details",
+    "Third version: Ensured camera movement for dynamic flow"
+  ]
+}

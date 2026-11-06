@@ -1,0 +1,45 @@
+{
+  "platform": "seedance",
+  "duration_s": 8,
+  "references": [
+    "Coffee maker product ad",
+    "Hands-only",
+    "Morning kitchen",
+    "Pour into a mug",
+    "Steam visible",
+    "Logo must stay readable"
+  ],
+  "shots": [
+    "Close-up of hands pouring coffee from the coffee maker into a mug",
+    "Steam rising visibly from the mug",
+    "Logo of the coffee maker product clearly visible in the background"
+  ],
+  "subject": "Coffee maker product",
+  "environment": "Morning kitchen",
+  "lighting": "Natural light from a window, bright and clear",
+  "style": "Minimalist, clean, product-focused",
+  "continuity": "Smooth transitions between shots without cuts",
+  "negatives": [
+    "No voices",
+    "No text overlays",
+    "No background music",
+    "No additional objects in the frame",
+    "Logo must be readable but not too large"
+  ],
+  "risks": [
+    "Steam might not be visible in the morning light",
+    "Hands might be too small to show details",
+    "Logo might not be readable if placed too far back"
+  ],
+  "assumptions": [
+    "The coffee maker is a standard electric coffee maker",
+    "The mug is a typical coffee mug",
+    "The kitchen environment is clean and well-lit",
+    "The logo is designed to be visible even in a small frame"
+  ],
+  "change_log": [
+    "Initial draft: Added steam effect to show coffee being poured",
+    "Revised: Ensured logo remains readable without cutting into the frame",
+    "Final: Optimized timing for 8 seconds with smooth transitions"
+  ]
+}

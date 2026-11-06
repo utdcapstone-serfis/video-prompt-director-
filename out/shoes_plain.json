@@ -1,0 +1,75 @@
+We are given a brief for a 6-second video ad for running shoes on seedance platform.
+ The brief: one runner on a city street at dawn, close-ups of shoes striking the pavement.
+
+ We must output a JSON with the following keys:
+   platform, duration_s, references, shots, subject, environment, lighting, style, continuity, negatives, risks, assumptions, change_log
+
+ Steps:
+ 1. Platform: "seedance" (given)
+ 2. Duration_s: 6 (as given, in seconds)
+ 3. References: We can list some references (e.g., images or videos that inspire this ad). Since it's a running shoes ad, we might reference:
+      - A runner in the early morning city (dawn) with focus on shoes.
+      - Close-up of shoes hitting pavement (like a fast-motion shot).
+      - Maybe: "A runner on a city street at dawn" and "close-up of shoes striking the as a high-energy moment"
+      But note: We are to write the prompt for the video. We can be specific.
+
+    Let's think: We can have references as an array of strings. Example: ["dawn city street", "running shoes close-up", "pavement impact"]
+
+ 4. Shots: We need to describe the shots. The brief says: one runner on a city street at dawn, close-ups of shoes striking the pavement.
+    We can break the 6 seconds into shots. Since it's a short ad, we might have:
+        - Shot 1: Wide shot of the runner on the city street at dawn (to set the scene)
+        - Shot 2: Close-up of the runner's shoes hitting the pavement (with sound of impact? but we don't have sound in video prompt)
+
+    However, the brief says "close-ups of shoes striking the pavement". So we might focus on the shoes.
+
+    Let's plan for 6 seconds:
+        - 0-1s: Wide shot of a runner on a city street at dawn (establishing the city, the time of day)
+        - 1-3s: Close-up of the shoes hitting the pavement (multiple impacts? or one impact? The brief says "striking" which implies one or a sequence)
+        - 3-6s: Maybe a quick transition to the shoes (like the same close-up but with the impact repeated a few times? or the shoes in motion)
+
+    But note: The brief says "one runner" and "close-ups of shoes". So we can do:
+
+        Shot 1 (0-1s): Medium shot of the runner (city street at dawn, early morning light)
+        Shot 2 (1-2s): Close-up of the shoes hitting the pavement (first impact)
+        Shot 3 (2-3s): Close-up of the shoes hitting the pavement (second impact, but slightly different angle or same angle with a quick movement)
+        Shot 4 (3-4s): Close-up of the shoes hitting the pavement (third impact) ... but wait, 6 seconds is short.
+
+    Alternatively, we can do a single shot that transitions? But the brief says "close-ups".
+
+    Let's make it simple: We'll have two shots? Or three?
+
+    I think the ad will be a single continuous shot? But the prompt says "shots". We can describe the shots as:
+
+        [
+          "Wide shot of a runner on a city street at dawn (0-1s)",
+          "Close-up of running shoes striking the pavement (1-3s) with a quick succession of impacts",
+          "Close-up of the same shoes in motion as they move forward (3-6s)"
+        ]
+
+    However, the brief says "close-ups of shoes striking the pavement". So the focus is on the impact.
+
+    Let me re-read: "close-ups of shoes striking the pavement". So we are going to have multiple close-ups of the shoes hitting the pavement? 
+
+    We'll break the 6 seconds into:
+
+        Shot 1: (0-1s) Wide shot of the runner on the city street at dawn (to set the scene)
+        Shot 2: (1-2s) Close-up of one shoe striking the pavement (with a slight delay to show the impact)
+        Shot 3: (2-3s) Close-up of the other shoe striking the pavement (to show the rhythm)
+        Shot 4: (3-4s) Close-up of the shoes together (to show the motion) 
+        Shot 5: (4-5s) Close-up of the shoes striking the pavement (again, but with a different perspective? or a quick loop)
+        Shot 6: (5-6s) Final close-up of the shoes on the pavement, with a clean and modern look.
+
+    But that's too many. Alternatively, we can do:
+
+        The entire ad is a single close-up of the shoes striking the pavement? But the brief says "one runner on a city street at dawn" so we need to show the runner.
+
+    Another idea: The ad is a 6-second video that starts with a wide shot of the runner in the city at dawn, then quickly cuts to the shoes.
+
+    Since the platform is seedance (a video platform), we want it to be engaging and fast.
+
+    Let me design:
+
+        0-1s: Wide shot of the runner (showing the city at dawn, with the runner running towards the camera)
+        1-2s: The runner's shoes hit the pavement (first impact) -> close-up
+        2-3s: The same close-up but the shoes are now moving (so the impact is a quick motion)
+        3-4s: Another impact (to show the

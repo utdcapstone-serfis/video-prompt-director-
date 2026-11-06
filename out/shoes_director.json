@@ -1,0 +1,58 @@
+{
+  "platform": "seedance",
+  "duration_s": 6,
+  "references": [
+    {
+      "id": "image_0",
+      "role": "product"
+    },
+    {
+      "id": "image_1",
+      "role": "environment"
+    }
+  ],
+  "shots": [
+    {
+      "t_start": 0,
+      "t_end": 2,
+      "action": "A runner in black running shoes steps forward onto the pavement",
+      "camera": "Static close-up on the shoe sole"
+    },
+    {
+      "t_start": 2,
+      "t_end": 4,
+      "action": "Shoe strikes the pavement with a light thud; the runner continues running",
+      "camera": "Slow push-in from the shoe to the pavement"
+    },
+    {
+      "t_start": 4,
+      "t_end": 6,
+      "action": "Runner reaches the end of the street; shoe sole glints in early morning light",
+      "camera": "Static wide shot showing the runner's path"
+    }
+  ],
+  "subject": "Black running shoes with a silver stripe on the upper",
+  "environment": "City street at dawn with early morning light",
+  "lighting": "Soft dawn light with minimal shadows",
+  "style": "Realistic action shot with crisp details",
+  "continuity": [
+    "Shoe sole shows the silver stripe clearly",
+    "Pavement texture is visible",
+    "Runner's movement is continuous"
+  ],
+  "negatives": [
+    "no text overlays",
+    "no logos",
+    "no reflections on the shoes",
+    "no extra people"
+  ],
+  "risks": [
+    "Shoe stripe may be too small; consider adding more detail in post",
+    "Pavement texture might not be visible in close-up; use reference image for texture"
+  ],
+  "assumptions": [
+    "Reference image_0 shows the shoes clearly",
+    "Reference image_1 shows the city street at dawn"
+  ],
+  "change_log": []
+}

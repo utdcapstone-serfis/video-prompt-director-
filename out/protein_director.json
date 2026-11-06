@@ -1,0 +1,50 @@
+{
+  "platform": "seedance",
+  "duration_s": 5,
+  "references": [
+    {
+      "id": "image_0",
+      "role": "product"
+    }
+  ],
+  "shots": [
+    {
+      "t_start": 0,
+      "t_end": 2,
+      "action": "A student opens the protein bar wrapper; the wrapper stays visible",
+      "camera": "Static close-up on the wrapper"
+    },
+    {
+      "t_start": 2,
+      "t_end": 3,
+      "action": "Student takes a bite of the bar",
+      "camera": "Static close-up on the student's mouth"
+    },
+    {
+      "t_start": 3,
+      "t_end": 5,
+      "action": "Student reacts with a satisfied smile; wrapper stays visible",
+      "camera": "Slow push-in from medium shot to close-up on the student's face"
+    }
+  ],
+  "subject": "A protein bar wrapper with branding visible",
+  "environment": "Dorm room floor with scattered textbooks",
+  "lighting": "Soft natural light from a window",
+  "style": "Realistic UGC-style video",
+  "continuity": [
+    "Wrapper branding stays visible throughout",
+    "Student's reaction shows satisfaction"
+  ],
+  "negatives": [
+    "no text overlays",
+    "no extra branding elements"
+  ],
+  "risks": [
+    "Wrapper may not stay visible after opening; ensure it's held steady",
+    "Reaction may be too quick; consider adding a pause for more natural expression"
+  ],
+  "assumptions": [
+    "Reference image_0 shows a protein bar wrapper with branding"
+  ],
+  "change_log": []
+}

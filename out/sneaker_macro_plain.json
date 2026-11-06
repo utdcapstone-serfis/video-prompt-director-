@@ -1,0 +1,34 @@
+{
+  "platform": "seedance",
+  "duration_s": 4,
+  "references": ["https://example.com/white-sneaker-rotating"],
+  "shots": [
+    "Close-up of white sneaker rotating on pedestal with studio lighting",
+    "Medium shot showing the full rotation of the sneaker with subtle studio lighting highlights"
+  ],
+  "subject": "White sneaker",
+  "environment": "Studio setting with neutral background",
+  "lighting": "Soft, even studio lighting with directional highlights to emphasize the sneaker's texture and material",
+  "style": "Minimalist, clean, professional",
+  "continuity": "Smooth rotation without abrupt movements, consistent lighting throughout",
+  "negatives": [
+    "No people in the frame",
+    "No reflections or distractions on the pedestal",
+    "No digital artifacts or motion blur"
+  ],
+  "risks": [
+    "Inconsistent lighting causing shadows",
+    "Overexposure of the sne: no texture detail",
+    "Rotational speed too fast causing unclear motion"
+  ],
+  "assumptions": [
+    "The studio lighting is set to avoid harsh shadows",
+    "The pedestal is stable to prevent wobbling during rotation",
+    "The white sneaker has a uniform color without complex patterns"
+  ],
+  "change_log": [
+    "Initial version: 4-second rotation shot",
+    "Added lighting details to emphasize texture",
+    "Ensured no people or distractions in the frame"
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "platform": "seedance",
+  "duration_s": 8,
+  "references": [
+    {
+      "id": "image_0",
+      "role": "product"
+    }
+  ],
+  "shots": [
+    {
+      "t_start": 0,
+      "t_end": 2,
+      "action": "A hand pours coffee into a mug",
+      "camera": "Static close-up on the mug"
+    },
+    {
+      "t_start": 2,
+      "t_end": 4,
+      "action": "Steam rises from the mug, visible in the air",
+      "camera": "Slow push-in on the steam"
+    },
+    {
+      "t_start": 4,
+      "t_end": 6,
+      "action": "The coffee maker's logo remains readable on the side",
+      "camera": "Static medium shot of the coffee maker"
+    },
+    {
+      "t_start": 6,
+      "t_end": 8,
+      "action": "Hand holds the mug close to the camera",
+      "camera": "Static close-up on the mug"
+    }
+  ],
+  "subject": "A coffee maker with a logo on the side",
+  "environment": "Morning kitchen with sunlight through a window",
+  "lighting": "Soft morning sunlight with warm coffee steam",
+  "style": "Calm, realistic lifestyle ad",
+  "continuity": [
+    "The coffee maker's logo stays readable",
+    "Steam rises from the mug"
+  ],
+  "negatives": [
+    "no text overlays",
+    "no background distractions"
+  ],
+  "risks": [
+    "Logo might be partially obscured by steam; consider adjusting steam timing",
+    "Steam may be too visible in the final frame; reduce steam intensity in post"
+  ],
+  "assumptions": [
+    "Product reference image provided as image_0"
+  ],
+  "change_log": []
+}

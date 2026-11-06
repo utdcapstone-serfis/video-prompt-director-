@@ -1,0 +1,108 @@
+{
+  "case_id": "start_again_ending_shot",
+  "split": "test",
+  "split_note": "Keep out of training and out of the RAG knowledge base so it can be used to measure improvement.",
+  "client_context": "Start Again: luxury gym and athletic apparel brand. Logo asset plus a 6-second ending shot for a rooftop fitness ad.",
+  "platform": "seedance_via_higgsfield",
+  "status": "prompts_only_outcomes_missing",
+  "raw_prompt_storage": "Save the verbatim prompts as data/raw/<version_id>.txt. This file holds structure and annotations, not the full text.",
+  "versions": [
+    {
+      "id": "logo_image_v1",
+      "type": "image_prompt",
+      "purpose": "Create the metallic S emblem used as a reference asset (image_2, image_3).",
+      "structure": "10 parts: Subject, Action, Setting, Mood, Camera, Lighting, Color, Style, Detail, Exclusions",
+      "notes": [
+        "Image-generation domain. Treat as asset preparation, separate from video prompting.",
+        "Uses a video-style 'Action' field for a static emblem."
+      ]
+    },
+    {
+      "id": "storyboard_v1",
+      "type": "video_prompt",
+      "duration_s": 6,
+      "structure": "Shot script table + two short free-form prompts (rooftop pull-back, logo reveal), each with a camera-control setting",
+      "camera": "High-speed drone pull-back, zoom out and upward tilt into clouds, then slow push-in on logo",
+      "style_tokens": ["cinematic 8k", "photorealistic motion blur", "high dynamic range"],
+      "inputs": ["rooftop group fitness image", "metallic S logo image"],
+      "notes": [
+        "Short and simple: one move per clip.",
+        "Two separate clips for two scenes."
+      ]
+    },
+    {
+      "id": "video_v2",
+      "type": "video_prompt",
+      "duration_s": 6,
+      "structure": "9 sections: Quality Lock, Reference/Identity Lock, Scene Lock, Camera, Performance, Dialogue, Audio, Style Intent, Negative Constraints",
+      "added_vs_previous": [
+        "Single continuous 6s shot instead of two clips",
+        "Reference locks for scene and brand assets (exact text and geometry)",
+        "Timestamps per section",
+        "Dialogue and audio design",
+        "Negative constraints list (no jump cuts, no morphing text, no misspelled lettering)"
+      ],
+      "user_revision_request": "Add the girl punching the logo."
+    },
+    {
+      "id": "video_v3",
+      "type": "video_prompt",
+      "duration_s": 6,
+      "structure": "Same 9 sections as v2, with per-second choreography",
+      "added_vs_previous": [
+        "Two named athletes (A and B) with outfit and appearance locked to a character sheet (image_4)",
+        "Target end composition provided as a reference image (image_5)",
+        "Instruction to REPLACE the female instructor in the reference image with the two athletes",
+        "Per-second action and camera beats",
+        "Audio timed to the physical action",
+        "Much longer negative list"
+      ],
+      "beats_in_6_seconds": ["squat load", "synchronized leap", "break through cloud deck", "punch and lock two S strokes", "tagline embosses"]
+    }
+  ],
+  "inferred_failure_signals": [
+    {
+      "signal": "Unwanted person persists from the reference image",
+      "evidence": "v3 adds a REPLACE instruction and 'No female instructor anywhere in the shot'",
+      "taxonomy": "REF",
+      "confidence": "inferred_from_prompt_diff"
+    },
+    {
+      "signal": "Face or outfit changes during the clip",
+      "evidence": "v3 adds a character sheet plus 'no face drift between frames, no outfit changes'",
+      "taxonomy": "ID",
+      "confidence": "inferred_from_prompt_diff"
+    },
+    {
+      "signal": "Logo geometry or text altered",
+      "evidence": "v2 and v3 both stress identical bevels, no morphing text, no misspelled lettering; v3 adds 'no third stroke or altered S geometry'",
+      "taxonomy": "TXT",
+      "confidence": "inferred_from_prompt_diff"
+    },
+    {
+      "signal": "Athletes pass through the emblem; extra people above the clouds",
+      "evidence": "v3 negatives",
+      "taxonomy": "MOT / CNT",
+      "confidence": "inferred_from_prompt_diff"
+    }
+  ],
+  "prompt_design_risks_to_test": [
+    "v3 puts five distinct beats into 6 seconds, which may exceed what one generation can execute.",
+    "Negative phrasing such as 'No female instructor' can prime the model to include the thing it names. Unverified.",
+    "Telling the model to replace a person in a reference image conflicts with the image itself. Editing the reference image may work better. Unverified.",
+    "Long taglines rendered inside the video may morph. Adding text in post may be safer. Unverified.",
+    "'cinematic 8k' style tokens may add little. Unverified."
+  ],
+  "observed_errors": [],
+  "human_feedback": null,
+  "quality_score": null,
+  "final_approved_prompt": null,
+  "retries": null,
+  "generation_cost": null,
+  "todo_from_user": [
+    "For each of v1, v2, v3: what did the output actually get wrong?",
+    "Which version came out best, and what was the final approved prompt?",
+    "Seedance/Higgsfield settings used (resolution, mode), number of retries, credits spent",
+    "Was the original brief (7s, two men, silver dumbbells, no drone shots, no zoom-out) a separate attempt? These prompts use drone/FPV and zoom-out."
+  ]
+}

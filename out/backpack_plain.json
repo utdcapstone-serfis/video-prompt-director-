@@ -1,0 +1,39 @@
+{
+  "platform": "seedance",
+  "duration_s": 10,
+  "references": [
+    "Hiking with friends",
+    "Adjusting backpack straps",
+    "Zipper pocket detail"
+  ],
+  "shots": [
+    "Wide shot of two friends hiking in nature",
+    "Close-up of one friend adjusting backpack straps",
+    "Close-up of the zipper pocket on the backpack"
+  ],
+  "subject": "Two friends hiking",
+  "environment": "Nature trail",
+  "lighting": "Natural daylight, soft and diffused",
+  "style": "Realistic, cinematic",
+  "continuity": "Smooth transitions between shots, maintaining natural movement",
+  "negatives": [
+    "Overly complex backpack designs",
+    "Distorted reflections in the zipper pocket",
+    "Excessive shadows affecting readability"
+  ],
+  "risks": [
+    "Safety concerns during outdoor activities",
+    "Misinterpretation of the zipper pocket's purpose",
+    "Overemphasis on the backpack leading to distraction"
+  ],
+  "assumptions": [
+    "Both friends are wearing appropriate hiking attire",
+    "The backpack is practical and functional for the hike",
+    "Natural lighting conditions are consistent throughout the video"
+  ],
+  "change_log": [
+    "Initial draft focused on backpack details but added more natural movement",
+    "Adjusted lighting to ensure readability of zipper pocket without harsh shadows",
+    "Removed unnecessary sound effects to maintain focus on visual storytelling"
+  ]
+}

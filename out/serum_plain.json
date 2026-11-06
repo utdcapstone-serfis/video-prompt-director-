@@ -1,0 +1,38 @@
+{
+  "platform": "seedance",
+  "duration_s": 5,
+  "references": [
+    "https://example.com/reference1.jpg",
+    "https://example.com/reference2.jpg"
+  ],
+  "shots": [
+    "Close-up of woman's hands gently applying serum to face",
+    "Slow zoom out to show bottle label visible in mirror reflection"
+  ],
+  "subject": "Woman applying skincare serum",
+  "environment": "Bathroom mirror with clean white background",
+  "lighting": "Soft natural light from window, minimal shadows",
+  "style": "Minimalist, clean aesthetic with focus on product detail",
+  "continuity": "Smooth transition between hand motion and reflection",
+  "negatives": [
+    "No product packaging shown",
+    "No text overlays",
+    "No additional props",
+    "No visible reflections beyond the mirror"
+  ],
+  "risks": [
+    "Serum application might appear messy",
+    "Mirror reflection could be too blurry",
+    "Lighting may cause harsh shadows"
+  ],
+  "assumptions": [
+    "Bathroom has sufficient natural light",
+    "Serum bottle is clearly visible in reflection",
+    "Mirror is clean and reflective"
+  ],
+  "change_log": [
+    "Initial draft: Added mirror reflection focus",
+    "Revised lighting to ensure soft shadows",
+    "Removed product packaging to meet UGC guidelines"
+  ]
+}
