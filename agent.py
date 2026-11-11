@@ -15,7 +15,7 @@ Examples:
   python3 agent.py review 1 --score 2 --failure CNT --notes "only one dumbbell visible"
   python3 agent.py revise 1
 """
-import argparse, json, os, re, sqlite3, subprocess, sys, time, urllib.request
+import argparse, json, os, re, shutil, sqlite3, subprocess, sys, time, urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).parent
@@ -345,6 +345,32 @@ def cmd_estimate(a):
         print("Estimate failed:", e.code, e.read()[:300].decode(errors="replace"))
 
 
+def cmd_import(a):
+    """Log a prompt + video that were made outside the agent. Stored as variant 'external'.
+    Prose prompts cannot be structure-linted, so only simple text checks are run."""
+    c = db()
+    text = Path(a.prompt_file).read_text().strip()
+    src = Path(a.video).expanduser().resolve()
+    if not src.is_file():
+        sys.exit(f"video not found: {src}")
+    settings = json.loads(a.settings) if a.settings else {}
+    settings["external"] = True
+    cur = c.execute("INSERT INTO runs(created,brief,duration,must,ban,prompt_text,lint,settings,status,variant) "
+                    "VALUES(?,?,?,?,?,?,?,?,?,?)",
+                    (time.strftime("%Y-%m-%d %H:%M"), a.brief, a.duration, "[]", "[]", text, "[]",
+                     json.dumps(settings), "imported", a.variant))
+    rid = cur.lastrowid
+    dest = ROOT / "videos" / f"run{rid}" / (src.stem.replace(" ", "_") + src.suffix)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(src, dest)
+    c.execute("UPDATE runs SET video_path=? WHERE id=?", (str(dest), rid))
+    c.commit()
+    hype = [h for h in HYPE if h in text.lower()]
+    print(f"Run {rid} imported as '{a.variant}' (not made by the agent). Video copied to {dest}")
+    print(f"Prompt: {len(text.split())} words, {len(text)} chars. Hype tokens found: {hype or 'none'}.")
+    print("No cost is counted for imported runs. Review it with: python3 agent.py review", rid, "--score N --failure CODE")
+
+
 def cmd_review(a):
     c = db()
     c.execute("UPDATE runs SET score=?, failure_code=?, notes=?, status='reviewed' WHERE id=?",
@@ -476,6 +502,121 @@ h2{{margin-top:28px}}.m{{color:var(--mut)}}a{{color:inherit}}</style></head><bod
     print("Report written to reports/report.html")
 
 
+DASH_TEMPLATE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Director Dashboard</title><style>
+:root{--bg:#f6f7f9;--card:#fff;--fg:#16181d;--mut:#5f6673;--line:#e1e4ea;--accent:#2a6fdb;--track:#e9ecf2}
+@media(prefers-color-scheme:dark){:root{--bg:#111318;--card:#1a1d24;--fg:#eceef2;--mut:#a3a9b6;--line:#2a2e38;--accent:#6aa3ff;--track:#262a33}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,sans-serif}
+main{max-width:1180px;margin:0 auto;padding:24px 16px 48px}h1{font-size:22px;margin:0 0 4px}h2{font-size:16px;margin:0 0 12px}
+.sub{color:var(--mut);margin:0 0 20px}.grid{display:grid;gap:12px}.kpis{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.charts{grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-top:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.kpi .v{font-size:26px;font-weight:650}.kpi .l{color:var(--mut);font-size:13px}.kpi .n{color:var(--mut);font-size:12px;margin-top:2px}
+.bar{display:grid;grid-template-columns:90px 1fr 70px;gap:8px;align-items:center;margin:6px 0;font-size:13px}
+.track{background:var(--track);border-radius:5px;height:12px;display:block;overflow:hidden}.fill{display:block;height:100%;background:var(--accent);border-radius:5px}
+.bv{text-align:right;color:var(--mut)}.bl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.note{color:var(--mut);font-size:12.5px;margin:8px 0 0}.empty{color:var(--mut);font-size:13px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}select{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+.wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13.5px}th,td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+th{color:var(--mut);font-weight:600;white-space:nowrap}video{width:140px;border-radius:6px;background:#000}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:12px;white-space:nowrap}
+section{margin-top:18px}
+</style></head><body><main>
+<h1>Video Prompt Director</h1><p class="sub">__SUB__</p>
+<div class="grid kpis">__KPIS__</div>
+<div class="grid charts">__CHARTS__</div>
+<section class="card"><h2>Runs</h2><div class="tools"><label>Variant <select id="fv"><option value="">all</option>__VOPTS__</select></label>
+<label>Status <select id="fs"><option value="">all</option>__SOPTS__</select></label></div>
+<div class="wrap"><table id="rt"><thead><tr><th>ID</th><th>Variant</th><th>Status</th><th>Score</th><th>Failure</th><th>Brief</th><th>Est. cost</th><th>Video</th><th>Notes</th></tr></thead><tbody>__ROWS__</tbody></table></div></section>
+<section class="card"><h2>Guidance</h2><div class="wrap"><table><thead><tr><th>ID</th><th>Status</th><th>Source</th><th>Claim</th><th>Tested in runs</th></tr></thead><tbody>__GROWS__</tbody></table></div>
+<p class="note">Only verified and experimental entries are shown to the model. Unverified entries stay out until one of your runs supports them.</p></section>
+<section class="card"><h2>Lessons</h2>__LESSONS__</section>
+</main><script>
+const fv=document.getElementById('fv'),fs=document.getElementById('fs');
+function f(){document.querySelectorAll('#rt tbody tr').forEach(r=>{r.style.display=(!fv.value||r.dataset.v===fv.value)&&(!fs.value||r.dataset.s===fs.value)?'':'none'})}
+fv.onchange=fs.onchange=f;</script></body></html>"""
+
+
+def cmd_dashboard(a):
+    """Write reports/dashboard.html: KPIs, charts, filterable runs table. View-only; rebuild any time."""
+    import html, collections, urllib.parse
+    e = html.escape
+    c = db()
+    runs = [dict(r) for r in c.execute("SELECT * FROM runs ORDER BY id")]
+    lessons = [dict(r) for r in c.execute("SELECT * FROM lessons")]
+    gpath = ROOT / "kb/guidance.jsonl"
+    gd = [json.loads(l) for l in gpath.read_text().splitlines() if l.strip()] if gpath.exists() else []
+    for r in runs:
+        r["variant"] = r.get("variant") or "director"
+        r["cost"] = None
+        if r.get("video_path") and r.get("settings"):
+            try:
+                r["cost"] = r["duration"] * RATES[json.loads(r["settings"])["resolution"]]
+            except Exception:
+                pass
+    scored = [r for r in runs if r["score"] is not None]
+    accepted = [r for r in scored if r["failure_code"] == "NONE" and r["score"] >= 4]
+    spend = sum(r["cost"] or 0 for r in runs)
+
+    def kpi(v, l, n=""):
+        return f'<div class="card kpi"><div class="v">{v}</div><div class="l">{l}</div><div class="n">{n}</div></div>'
+    avg = f"{sum(r['score'] for r in scored) / len(scored):.1f}" if scored else "n/a"
+    kpis = "".join([
+        kpi(len(runs), "Runs", f"{sum(1 for r in runs if r.get('video_path'))} with a video"),
+        kpi(len(scored), "Reviewed", "scored by a person"),
+        kpi(avg, "Average score", "out of 5"),
+        kpi(f"{len(accepted)}/{len(scored)}" if scored else "n/a", "Accepted", "score 4+ and no failure"),
+        kpi(f"${spend:.2f}", "Est. spend", "from per-second rates, not billing"),
+        kpi(f"${spend / len(accepted):.2f}" if accepted else "n/a", "Est. cost per accepted video"),
+    ])
+
+    def bars(items, maxv, fmt):
+        if not items:
+            return '<p class="empty">Nothing to show yet.</p>'
+        return "".join(f'<div class="bar"><span class="bl" title="{e(str(l))}">{e(str(l))}</span><span class="track">'
+                       f'<span class="fill" style="width:{(max(2, round(100 * v / maxv)) if v and maxv else 0)}%"></span></span>'
+                       f'<span class="bv">{fmt(v, n)}</span></div>' for l, v, n in items)
+    by_var = collections.defaultdict(list)
+    for r in scored:
+        by_var[r["variant"]].append(r["score"])
+    v_items = [(k, sum(v) / len(v), len(v)) for k, v in by_var.items()]
+    fails = collections.Counter(r["failure_code"] for r in scored if r["failure_code"] != "NONE")
+    f_items = [(k, v, v) for k, v in fails.most_common()]
+    s_items = [(f"run {r['id']}", r["cost"], r["cost"]) for r in runs if r["cost"]]
+    g_counts = collections.Counter(g["status"] for g in gd)
+    g_items = [(k, g_counts.get(k, 0), g_counts.get(k, 0)) for k in ("verified", "experimental", "unverified", "retired")]
+    charts = "".join([
+        f'<div class="card"><h2>Average score by prompt variant</h2>{bars(v_items, 5, lambda v, n: f"{v:.1f} (n={n})")}'
+        f'<p class="note">Small samples. One video per prompt is noisy, so treat gaps as hints.</p></div>',
+        f'<div class="card"><h2>Failure types</h2>{bars(f_items, max([x[1] for x in f_items] or [1]), lambda v, n: str(n))}</div>',
+        f'<div class="card"><h2>Estimated spend per run</h2>{bars(s_items, max([x[1] for x in s_items] or [1]), lambda v, n: f"${n:.2f}")}</div>',
+        f'<div class="card"><h2>Guidance by status</h2>{bars(g_items, max([x[1] for x in g_items] or [1]), lambda v, n: str(n))}</div>',
+    ])
+    rows = ""
+    for r in runs:
+        vid = ""
+        if r.get("video_path"):
+            rel = os.path.relpath(r["video_path"].split(",")[0], ROOT / "reports")
+            vid = f'<video controls preload="metadata" src="{urllib.parse.quote(rel)}"></video>'
+        rows += (f'<tr data-v="{e(r["variant"])}" data-s="{e(r["status"] or "")}"><td>{r["id"]}</td>'
+                 f'<td><span class="tag">{e(r["variant"])}</span></td><td>{e(r["status"] or "")}</td>'
+                 f'<td>{r["score"] if r["score"] is not None else ""}</td><td>{e(r["failure_code"] or "")}</td>'
+                 f'<td>{e((r["brief"] or "")[:90])}</td><td>{("$%.2f" % r["cost"]) if r["cost"] else ""}</td>'
+                 f'<td>{vid}</td><td>{e((r["notes"] or "")[:160])}</td></tr>')
+    grows = "".join(f'<tr><td>{g["id"]}</td><td><span class="tag">{g["status"]}</span></td><td>{e(g["source_type"])}</td>'
+                    f'<td>{e(g["claim"][:140])}</td><td>{", ".join(map(str, g["tested_runs"]))}</td></tr>' for g in gd)
+    lhtml = ("<ul>" + "".join(f'<li><span class="tag">{e(l["status"])}</span> {e(l["text"][:200])}</li>' for l in lessons) + "</ul>"
+             if lessons else '<p class="empty">No lessons yet.</p>')
+    sub = f"Updated {time.strftime('%Y-%m-%d %H:%M')} · rebuild with: python3 agent.py dashboard"
+    out = (DASH_TEMPLATE.replace("__SUB__", e(sub)).replace("__KPIS__", kpis).replace("__CHARTS__", charts)
+           .replace("__VOPTS__", "".join(f"<option>{e(v)}</option>" for v in sorted({r["variant"] for r in runs})))
+           .replace("__SOPTS__", "".join(f"<option>{e(s)}</option>" for s in sorted({r["status"] or "" for r in runs})))
+           .replace("__ROWS__", rows).replace("__GROWS__", grows).replace("__LESSONS__", lhtml))
+    (ROOT / "reports").mkdir(exist_ok=True)
+    (ROOT / "reports/dashboard.html").write_text(out)
+    print("Dashboard written to reports/dashboard.html")
+
+
 def cmd_list(a):
     for r in db().execute("SELECT id,parent_id,status,score,failure_code,substr(brief,1,60) b FROM runs"):
         print(dict(r))
@@ -497,6 +638,11 @@ def main():
     e = sub.add_parser("estimate"); e.add_argument("run", type=int)
     e.add_argument("--resolution", default="720p", choices=["480p", "720p", "1080p"])
     e.add_argument("--aspect", default="9:16"); e.add_argument("--audio", action="store_true"); e.set_defaults(f=cmd_estimate)
+    im = sub.add_parser("import", help="log a prompt and video made outside the agent")
+    im.add_argument("--prompt-file", required=True); im.add_argument("--video", required=True)
+    im.add_argument("--brief", required=True); im.add_argument("--duration", type=int, required=True)
+    im.add_argument("--settings", help="JSON of the settings used"); im.add_argument("--variant", default="external")
+    im.set_defaults(f=cmd_import)
     v = sub.add_parser("review"); v.add_argument("run", type=int); v.add_argument("--score", type=int, required=True, choices=range(1, 6))
     v.add_argument("--failure", required=True, choices=CODES + ["NONE"]); v.add_argument("--notes", default=""); v.set_defaults(f=cmd_review)
     r = sub.add_parser("revise"); r.add_argument("run", type=int); r.set_defaults(f=cmd_revise)
@@ -510,6 +656,7 @@ def main():
     gd.add_argument("--model", default="seedance-2.5"); gd.add_argument("--run", type=int)
     gd.add_argument("--status"); gd.set_defaults(f=cmd_guidance)
     sub.add_parser("report").set_defaults(f=cmd_report)
+    sub.add_parser("dashboard").set_defaults(f=cmd_dashboard)
     sub.add_parser("list").set_defaults(f=cmd_list)
     a = ap.parse_args(); a.f(a)
 

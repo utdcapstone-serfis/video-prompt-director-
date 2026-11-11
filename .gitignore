@@ -1,3 +1,5 @@
 __pycache__/
 videos/
 .DS_Store
+director.db
+reports/
