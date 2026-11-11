@@ -15,13 +15,40 @@ Examples:
   python3 agent.py review 1 --score 2 --failure CNT --notes "only one dumbbell visible"
   python3 agent.py revise 1
 """
-import argparse, json, os, re, shutil, sqlite3, subprocess, sys, time, urllib.request
+import argparse, getpass, json, os, re, shutil, sqlite3, subprocess, sys, time, urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).parent
-DB = ROOT / "director.db"
-MODEL = os.environ.get("DIRECTOR_MODEL", "qwen3:4b")
-HF = os.environ.get("HF_SCRIPT", str(Path.home() / ".claude/skills/higgsfield/scripts/hf.py"))
+
+
+def load_settings():
+    """Defaults < settings.json (shared, committed) < settings.local.json (yours, gitignored) < env vars."""
+    s = {"person": getpass.getuser(), "model": "qwen3:4b", "ollama_url": "http://localhost:11434",
+         "hf_script": str(Path.home() / ".claude/skills/higgsfield/scripts/hf.py"),
+         "db_path": "director.db", "log_dir": "logs", "team_log_dirs": ["logs"]}
+    for name in ("settings.json", "settings.local.json"):
+        f = ROOT / name
+        if f.exists():
+            s.update(json.loads(f.read_text()))
+    for key, env in (("person", "DIRECTOR_PERSON"), ("model", "DIRECTOR_MODEL"),
+                     ("hf_script", "HF_SCRIPT"), ("ollama_url", "OLLAMA_URL")):
+        if os.environ.get(env):
+            s[key] = os.environ[env]
+    return s
+
+
+def _path(p):
+    p = Path(p).expanduser()
+    return p if p.is_absolute() else ROOT / p
+
+
+SETTINGS = load_settings()
+PERSON = re.sub(r"[^A-Za-z0-9_.-]+", "_", SETTINGS["person"]) or "me"
+DB = _path(SETTINGS["db_path"])
+MODEL = SETTINGS["model"]
+HF = SETTINGS["hf_script"]
+OLLAMA_CHAT = SETTINGS["ollama_url"].rstrip("/") + "/api/chat"
+LOG_DIR = _path(SETTINGS["log_dir"])
 ENDPOINT = "bytedance/seedance-2.5/text-to-video"
 REF_ENDPOINT = "bytedance/seedance-2.5/reference-to-video"
 REF_ROLES = ["character", "product", "logo", "scene", "style", "other"]
@@ -50,13 +77,50 @@ def db():
     return c
 
 
+# ---------- per-person text logs ----------
+def export_log():
+    """Write my runs and lessons as JSON lines under <log_dir>/<person>/. Only I edit these files,
+    so teammates' files never conflict. The local SQLite file stays a private working copy."""
+    c = db()
+    out = LOG_DIR / PERSON
+    out.mkdir(parents=True, exist_ok=True)
+    for table, name in (("runs", "runs.jsonl"), ("lessons", "lessons.jsonl")):
+        rows = [dict(r, person=PERSON, uid=f"{PERSON}-{r['id']}") for r in c.execute(f"SELECT * FROM {table} ORDER BY id")]
+        (out / name).write_text("".join(json.dumps(r) + "\n" for r in rows))
+
+
+def team_rows(name):
+    """Rows from OTHER people's log files found in team_log_dirs. Their video files are not on this machine."""
+    rows = []
+    for d in SETTINGS["team_log_dirs"]:
+        for f in sorted(_path(d).glob(f"*/{name}")):
+            if f.parent.name == PERSON:
+                continue
+            for line in f.read_text().splitlines():
+                if line.strip():
+                    r = json.loads(line)
+                    r["id"], r["video_path"] = r.get("uid") or f"{f.parent.name}-{r['id']}", None
+                    r["person"] = f.parent.name
+                    rows.append(r)
+    return rows
+
+
+def all_runs(c):
+    mine = [dict(r, person=PERSON) for r in c.execute("SELECT * FROM runs")]
+    return sorted(mine + team_rows("runs.jsonl"), key=lambda r: (r.get("created") or "", str(r["id"])))
+
+
+def all_lessons(c):
+    return [dict(r, person=PERSON) for r in c.execute("SELECT * FROM lessons")] + team_rows("lessons.jsonl")
+
+
 # ---------- model ----------
 def llm(system, user):
     body = {"model": MODEL, "stream": False, "think": False, "format": "json",
             "messages": [{"role": "system", "content": system}, {"role": "user", "content": "/no_think " + user}],
             "options": {"temperature": 0.7, "seed": 42, "num_predict": 1500}}
     for _ in range(2):
-        req = urllib.request.Request("http://localhost:11434/api/chat", json.dumps(body).encode(),
+        req = urllib.request.Request(OLLAMA_CHAT, json.dumps(body).encode(),
                                      {"Content-Type": "application/json"})
         try:
             return json.load(urllib.request.urlopen(req, timeout=600))["message"]["content"]
@@ -262,7 +326,7 @@ def cmd_plain(a):
     body = {"model": MODEL, "stream": False, "think": False, "format": "json",
             "messages": [{"role": "user", "content": "/no_think " + user}],
             "options": {"temperature": 0.7, "seed": 42, "num_predict": 600}}
-    req = urllib.request.Request("http://localhost:11434/api/chat", json.dumps(body).encode(),
+    req = urllib.request.Request(OLLAMA_CHAT, json.dumps(body).encode(),
                                  {"Content-Type": "application/json"})
     text = json.load(urllib.request.urlopen(req, timeout=600))["message"]["content"]
     text = re.sub(r"<think>.*?</think>", "", text, flags=re.S).strip()
@@ -371,6 +435,40 @@ def cmd_import(a):
     print("No cost is counted for imported runs. Review it with: python3 agent.py review", rid, "--score N --failure CODE")
 
 
+def cmd_config(a):
+    """Show the effective settings, or save overrides to settings.local.json (yours only, gitignored)."""
+    f = ROOT / "settings.local.json"
+    local = json.loads(f.read_text()) if f.exists() else {}
+    changes = {"person": a.person, "model": a.model, "hf_script": a.hf_script, "ollama_url": a.ollama_url,
+               "log_dir": a.log_dir}
+    changes = {k: v for k, v in changes.items() if v}
+    if a.add_team_dir:
+        local["team_log_dirs"] = sorted(set(local.get("team_log_dirs", SETTINGS["team_log_dirs"])) | set(a.add_team_dir))
+    if changes or a.add_team_dir:
+        local.update(changes)
+        f.write_text(json.dumps(local, indent=2) + "\n")
+        print(f"Saved to {f.name}. It is gitignored, so it stays on this machine.")
+    s = load_settings()
+    for k, v in s.items():
+        print(f"  {k}: {v}")
+    print(f"  (your log files: {_path(s['log_dir']) / re.sub(r'[^A-Za-z0-9_.-]+', '_', s['person'])})")
+    if not Path(s["hf_script"]).expanduser().is_file():
+        print("  WARNING: hf_script does not point to a file. Needed only for `generate`.")
+
+
+def cmd_team(a):
+    """Show whose log files this machine can see and how many runs and reviews each has."""
+    c = db()
+    runs = all_runs(c)
+    people = sorted({r["person"] for r in runs} | {PERSON})
+    print(f"{'person':<20}{'runs':>6}{'reviewed':>10}{'avg score':>11}")
+    for p in people:
+        mine = [r for r in runs if r["person"] == p]
+        sc = [r["score"] for r in mine if r.get("score") is not None]
+        print(f"{p + (' (you)' if p == PERSON else ''):<20}{len(mine):>6}{len(sc):>10}{(sum(sc) / len(sc) if sc else 0):>11.1f}")
+    print("Folders searched:", ", ".join(str(_path(d)) for d in SETTINGS["team_log_dirs"]))
+
+
 def cmd_review(a):
     c = db()
     c.execute("UPDATE runs SET score=?, failure_code=?, notes=?, status='reviewed' WHERE id=?",
@@ -439,8 +537,8 @@ def cmd_report(a):
     """Write reports/report.html and print a short summary."""
     import html, collections
     c = db()
-    runs = [dict(r) for r in c.execute("SELECT * FROM runs ORDER BY id")]
-    lessons = [dict(r) for r in c.execute("SELECT * FROM lessons")]
+    runs = all_runs(c)
+    lessons = all_lessons(c)
     gpath = ROOT / "kb/guidance.jsonl"
     gd = [json.loads(l) for l in gpath.read_text().splitlines() if l.strip()] if gpath.exists() else []
     for r in runs:
@@ -542,8 +640,8 @@ def cmd_dashboard(a):
     import html, collections, urllib.parse
     e = html.escape
     c = db()
-    runs = [dict(r) for r in c.execute("SELECT * FROM runs ORDER BY id")]
-    lessons = [dict(r) for r in c.execute("SELECT * FROM lessons")]
+    runs = all_runs(c)
+    lessons = all_lessons(c)
     gpath = ROOT / "kb/guidance.jsonl"
     gd = [json.loads(l) for l in gpath.read_text().splitlines() if l.strip()] if gpath.exists() else []
     for r in runs:
@@ -655,10 +753,18 @@ def main():
                     choices=["official", "own_test", "third_party"])
     gd.add_argument("--model", default="seedance-2.5"); gd.add_argument("--run", type=int)
     gd.add_argument("--status"); gd.set_defaults(f=cmd_guidance)
+    cf = sub.add_parser("config", help="show or change your settings (saved to settings.local.json)")
+    cf.add_argument("--person"); cf.add_argument("--model"); cf.add_argument("--hf-script")
+    cf.add_argument("--ollama-url"); cf.add_argument("--log-dir")
+    cf.add_argument("--add-team-dir", nargs="*", help="extra folder holding teammates' log folders (e.g. a shared Drive folder)")
+    cf.set_defaults(f=cmd_config)
+    sub.add_parser("team", help="who is in the team logs").set_defaults(f=cmd_team)
     sub.add_parser("report").set_defaults(f=cmd_report)
     sub.add_parser("dashboard").set_defaults(f=cmd_dashboard)
     sub.add_parser("list").set_defaults(f=cmd_list)
     a = ap.parse_args(); a.f(a)
+    if a.cmd not in ("config", "team"):
+        export_log()
 
 
 if __name__ == "__main__":

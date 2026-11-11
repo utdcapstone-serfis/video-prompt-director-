@@ -1,0 +1,7 @@
+{
+  "model": "qwen3:4b",
+  "ollama_url": "http://localhost:11434",
+  "db_path": "director.db",
+  "log_dir": "logs",
+  "team_log_dirs": ["logs"]
+}

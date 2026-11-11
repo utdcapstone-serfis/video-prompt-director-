@@ -3,3 +3,5 @@ videos/
 .DS_Store
 director.db
 reports/
+logs/
+settings.local.json
