@@ -34,10 +34,11 @@ Keep Ollama running while you use the agent. If your laptop has less than 8 GB o
 ## 4. Tell the agent who you are
 
 ```bash
-python3 agent.py config --person "yourname" --hf-script "/full/path/to/hf.py"
+python3 agent.py config --person "yourname" --video-model seedance-2.0 --hf-script "/full/path/to/hf.py"
 ```
 
 - `--person` names your log folder. Use a short name with no spaces.
+- `--video-model` picks the Seedance version the agent sends to. The team is using `seedance-2.0` for now because it costs less. Do not change it without telling the team, since results from different models are not directly comparable.
 - `--hf-script` is only needed to generate videos. It is the Higgsfield `hf.py` script from the Higgsfield skill.
 - This saves to `settings.local.json`, which is gitignored and stays on your machine.
 - Run `python3 agent.py config` with no options any time to see the settings in use.
@@ -65,11 +66,19 @@ python3 agent.py estimate <run>                    # price check, free
 python3 agent.py generate <run> --yes --resolution 480p
 python3 agent.py review <run> --score 1-5 --failure CODE --notes "what happened"
 python3 agent.py revise <run>
-python3 agent.py import --prompt-file p.txt --video v.mp4 --brief "..." --duration 30   # log a video made elsewhere
+python3 agent.py import --prompt-file p.txt --video v.mp4 --brief "..." --duration 7 --settings '{"model":"seedance-2.0"}'   # log a video made elsewhere
 python3 agent.py dashboard                         # writes reports/dashboard.html
 ```
 
-Failure codes are in `kb/failure_taxonomy.md`. Use `NONE` when nothing went wrong.
+### Scoring: use the team rubric
+
+Everyone scores with the same rules in `kb/scoring_rubric.md`: the 1 to 5 scale, one failure code per video, severity, and the note format. Read it before your first score. Print the codes any time:
+
+```bash
+python3 agent.py codes
+```
+
+Use `NONE` only when nothing is worth fixing, which normally means a 5. Score only what you actually watched, and write what you did not check in the notes.
 
 ## How logs work (and what is shared)
 
