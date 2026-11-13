@@ -1,6 +1,6 @@
 # Video prompt failure taxonomy (draft v0.1)
 
-Status key: **observed** = confirmed in a real generation, **inferred** = suggested by prompt history, **hypothesis** = plausible, untested. Nothing below is marked observed yet. Update this after reviewing real outputs.
+Status key: **observed** = confirmed in a real generation, **inferred** = suggested by prompt history, **hypothesis** = plausible, untested. Observed means seen in a real generation and logged. See kb/scoring_rubric.md for the team's scoring rules and the full code list; this file holds the checks and fixes to test.
 
 Each failure has a code, a visible symptom, an automatic or human check, and a targeted fix to test.
 
@@ -15,6 +15,10 @@ Each failure has a code, a visible symptom, an automatic or human check, and a t
 | TIME | Overstuffed timeline | More events than the duration can show; later beats skipped or rushed | Count beats against seconds | Cap beats by duration (see system prompt); split into separate clips and join | inferred |
 | CONT | Continuity break | Scene, lighting, or character differs between cuts or clips | Compare last frame of clip N to first frame of clip N+1 | Use the last frame of one clip as the first-frame reference of the next | hypothesis |
 | AUD | Audio mismatch | Voiceover timing or sound effects not aligned to action | Listen with the timeline | Fewer audio cues; keep dialogue short; consider adding audio in post | hypothesis |
+| PRD | Product fidelity | Product shape, color or design differs from the brief or reference | Compare the product in several frames to the reference | Reference image of the product; one short lock phrase; keep the product front-facing | hypothesis |
+| BRF | Brief miss | A required scene, action or element is absent with no other code explaining it | Tick each brief element against the video | Put each required element in its own timed shot; shorten the prompt | hypothesis |
+| STY | Style and look | Lighting, color, mood or setting off-brief | Compare to the brief's look words | State lighting and color plainly in one line; avoid conflicting style words | hypothesis |
+| QLT | Visual quality | Blur, flicker, artifacts | Pause on several frames | Try a higher resolution once; simplify the scene | hypothesis |
 | PRM | Prompt-design fault | Contradictions, hype tokens, very long prompt, negatives that name the unwanted thing | Lint the prompt before generating | Remove contradictions; shorten; move constraints to positive phrasing; keep the negatives list short | inferred |
 
 ## How this is used

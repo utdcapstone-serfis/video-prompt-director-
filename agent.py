@@ -25,7 +25,7 @@ def load_settings():
     """Defaults < settings.json (shared, committed) < settings.local.json (yours, gitignored) < env vars."""
     s = {"person": getpass.getuser(), "model": "qwen3:4b", "ollama_url": "http://localhost:11434",
          "hf_script": str(Path.home() / ".claude/skills/higgsfield/scripts/hf.py"),
-         "db_path": "director.db", "log_dir": "logs", "team_log_dirs": ["logs"]}
+         "video_model": "seedance-2.5", "db_path": "director.db", "log_dir": "logs", "team_log_dirs": ["logs"]}
     for name in ("settings.json", "settings.local.json"):
         f = ROOT / name
         if f.exists():
@@ -49,10 +49,18 @@ MODEL = SETTINGS["model"]
 HF = SETTINGS["hf_script"]
 OLLAMA_CHAT = SETTINGS["ollama_url"].rstrip("/") + "/api/chat"
 LOG_DIR = _path(SETTINGS["log_dir"])
-ENDPOINT = "bytedance/seedance-2.5/text-to-video"
-REF_ENDPOINT = "bytedance/seedance-2.5/reference-to-video"
+VIDEO_MODEL = SETTINGS["video_model"]  # seedance-2.0 or seedance-2.5
+ENDPOINT = f"bytedance/{VIDEO_MODEL}/text-to-video"
+REF_ENDPOINT = f"bytedance/{VIDEO_MODEL}/reference-to-video"
 REF_ROLES = ["character", "product", "logo", "scene", "style", "other"]
-CODES = ["ID", "CNT", "REF", "TXT", "CAM", "MOT", "TIME", "CONT", "AUD", "PRM", "OTHER"]
+CODES = ["ID", "CNT", "PRD", "REF", "TXT", "CAM", "MOT", "TIME", "BRF", "STY", "QLT", "CONT", "AUD", "PRM", "OTHER"]
+CODE_HELP = {"ID": "identity: a person's look is wrong or changes", "CNT": "count: wrong number of people or objects",
+             "PRD": "product fidelity: shape, color or design differs", "REF": "reference image or video ignored or leaking",
+             "TXT": "text or logo unreadable, wrong or unwanted", "CAM": "camera does something not asked for",
+             "MOT": "motion or physics looks wrong", "TIME": "too much for the length, beat missing or rushed",
+             "BRF": "a required scene or action is absent", "STY": "lighting, color or mood off-brief",
+             "QLT": "blurry, flickering or artifacts", "CONT": "differs between cuts that should match",
+             "AUD": "audio wrong, missing or out of sync", "PRM": "the prompt itself caused it", "OTHER": "none of the above"}
 HYPE = ["8k", "4k", "masterpiece", "hyperrealistic", "ultra-realistic"]
 KEYS = ["platform", "duration_s", "references", "shots", "subject", "environment", "lighting",
         "style", "continuity", "negatives", "risks", "assumptions", "change_log"]
@@ -225,6 +233,8 @@ def guidance(text, k=4):
         g = json.loads(line)
         if g["status"] not in ("verified", "experimental"):
             continue
+        if g["source_type"] == "official" and g.get("model") not in (VIDEO_MODEL, "any"):
+            continue  # official docs facts are version-specific
         hit = len(words & set(g["tags"]))
         if hit:
             scored.append((hit, g))
@@ -382,7 +392,7 @@ def cmd_generate(a):
         files = sorted(str(p) for p in out.glob("*") if p.suffix in (".mp4", ".mov"))
         status = "generated" if files else "failed_not_charged"
         c.execute("UPDATE runs SET status=?, video_path=?, settings=? WHERE id=?",
-                  (status, ",".join(files), json.dumps(vars(a), default=str), a.run))
+                  (status, ",".join(files), json.dumps({**vars(a), "video_model": VIDEO_MODEL}, default=str), a.run))
         c.commit()
         print("Saved:" if files else "No video produced (status 'failed'). See the message above:", files)
 
@@ -439,7 +449,7 @@ def cmd_config(a):
     """Show the effective settings, or save overrides to settings.local.json (yours only, gitignored)."""
     f = ROOT / "settings.local.json"
     local = json.loads(f.read_text()) if f.exists() else {}
-    changes = {"person": a.person, "model": a.model, "hf_script": a.hf_script, "ollama_url": a.ollama_url,
+    changes = {"person": a.person, "model": a.model, "video_model": a.video_model, "hf_script": a.hf_script, "ollama_url": a.ollama_url,
                "log_dir": a.log_dir}
     changes = {k: v for k, v in changes.items() if v}
     if a.add_team_dir:
@@ -467,6 +477,13 @@ def cmd_team(a):
         sc = [r["score"] for r in mine if r.get("score") is not None]
         print(f"{p + (' (you)' if p == PERSON else ''):<20}{len(mine):>6}{len(sc):>10}{(sum(sc) / len(sc) if sc else 0):>11.1f}")
     print("Folders searched:", ", ".join(str(_path(d)) for d in SETTINGS["team_log_dirs"]))
+
+
+def cmd_codes(a):
+    """Print the shared failure codes. Full rules are in kb/scoring_rubric.md."""
+    for k in CODES:
+        print(f"{k:<6}{CODE_HELP[k]}")
+    print("NONE  nothing worth fixing (normally a 5)\nRubric: kb/scoring_rubric.md")
 
 
 def cmd_review(a):
@@ -755,15 +772,16 @@ def main():
     gd.add_argument("--status"); gd.set_defaults(f=cmd_guidance)
     cf = sub.add_parser("config", help="show or change your settings (saved to settings.local.json)")
     cf.add_argument("--person"); cf.add_argument("--model"); cf.add_argument("--hf-script")
-    cf.add_argument("--ollama-url"); cf.add_argument("--log-dir")
+    cf.add_argument("--video-model", choices=["seedance-2.0", "seedance-2.5"]); cf.add_argument("--ollama-url"); cf.add_argument("--log-dir")
     cf.add_argument("--add-team-dir", nargs="*", help="extra folder holding teammates' log folders (e.g. a shared Drive folder)")
     cf.set_defaults(f=cmd_config)
     sub.add_parser("team", help="who is in the team logs").set_defaults(f=cmd_team)
     sub.add_parser("report").set_defaults(f=cmd_report)
     sub.add_parser("dashboard").set_defaults(f=cmd_dashboard)
+    sub.add_parser("codes", help="list the failure codes").set_defaults(f=cmd_codes)
     sub.add_parser("list").set_defaults(f=cmd_list)
     a = ap.parse_args(); a.f(a)
-    if a.cmd not in ("config", "team"):
+    if a.cmd not in ("config", "team", "codes"):
         export_log()
 
 
